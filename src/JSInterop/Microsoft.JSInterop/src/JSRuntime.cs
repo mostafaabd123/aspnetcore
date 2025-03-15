@@ -82,6 +82,30 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         => InvokeAsync<TValue>(0, identifier, cancellationToken, args);
 
+    /// <inheritdoc />
+    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args)
+        => InvokeAsync<IJSObjectReference>($"new:{identifier}", args);
+
+    /// <inheritdoc />
+    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+        => InvokeAsync<IJSObjectReference>($"new:{identifier}", cancellationToken, args);
+
+    /// <inheritdoc />
+    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
+        => InvokeAsync<TValue>($"get:{identifier}", null);
+
+    /// <inheritdoc />
+    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken)
+        => InvokeAsync<TValue>($"get:{identifier}", cancellationToken, null);
+
+    /// <inheritdoc />
+    public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
+        => await InvokeAsync<IJSVoidResult>($"set:{identifier}", [value]);
+
+    /// <inheritdoc />
+    public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+        => await InvokeAsync<IJSVoidResult>($"set:{identifier}", cancellationToken, [value]);
+
     internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, object?[]? args)
     {
         if (DefaultAsyncTimeout.HasValue)
