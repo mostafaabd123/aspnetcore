@@ -14,6 +14,7 @@ import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethod
 import { WebAssemblyComponentDescriptor, WebAssemblyServerOptions, discoverWebAssemblyPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
+import { DotNet } from '@microsoft/dotnet-js-interop';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
@@ -263,12 +264,12 @@ async function scheduleAfterStarted(operations: string): Promise<void> {
   Blazor._internal.updateRootComponents(operations);
 }
 
-function invokeJSJson(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number): string | null {
-  if (asyncHandle !== 0) {
-    dispatcher.beginInvokeJSFromDotNet(asyncHandle, identifier, argsJson, resultType, targetInstanceId);
+function invokeJSJson(invocationInfo: DotNet.JSAsyncInvocationInfo): string | null {
+  if (invocationInfo.taskId !== 0) {
+    dispatcher.beginInvokeJSFromDotNet(invocationInfo);
     return null;
   } else {
-    return dispatcher.invokeJSFromDotNet(identifier, argsJson, resultType, targetInstanceId);
+    return dispatcher.invokeJSFromDotNet(invocationInfo.identifier, invocationInfo.argsJson, invocationInfo.resultType, invocationInfo.targetInstanceId);
   }
 }
 

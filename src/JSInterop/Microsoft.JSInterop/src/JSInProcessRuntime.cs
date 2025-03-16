@@ -47,14 +47,17 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
         => Invoke<TValue>(identifier, 0, args);
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public IJSObjectReference InvokeNew(string identifier, object?[]? args)
         => Invoke<IJSObjectReference>($"new:{identifier}", args);
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public TValue GetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
         => Invoke<TValue>($"get:{identifier}", null);
 
     /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public void SetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
         => Invoke<IJSVoidResult>($"set:{identifier}", [value]);
 

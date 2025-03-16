@@ -482,13 +482,13 @@ public class JSRuntimeTest
             });
         }
 
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(JSAsyncInvocationInfo invocationInfo)
         {
             BeginInvokeCalls.Add(new BeginInvokeAsyncArgs
             {
-                AsyncHandle = asyncHandle,
-                Identifier = identifier,
-                ArgsJson = argsJson,
+                AsyncHandle = invocationInfo.TaskId,
+                Identifier = invocationInfo.Identifier,
+                ArgsJson = invocationInfo.ArgsJson,
             });
         }
 

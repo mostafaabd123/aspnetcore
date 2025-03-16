@@ -27,6 +27,8 @@ export function attachWebRendererInterop(
     throw new Error(`Interop methods are already registered for renderer ${rendererId}`);
   }
 
+  console.log("attachWebRendererInterop", interopMethods);
+
   interopMethodsByRenderer.set(rendererId, interopMethods);
 
   if (jsComponentParameters && jsComponentInitializers && Object.keys(jsComponentParameters).length > 0) {
@@ -40,6 +42,7 @@ export function attachWebRendererInterop(
 }
 
 export function detachWebRendererInterop(rendererId: number): DotNet.DotNetObject {
+  console.log("detachWebRendererInterop", interopMethodsByRenderer);
   const interopMethods = interopMethodsByRenderer.get(rendererId);
   if (!interopMethods) {
     throw new Error(`Interop methods are not registered for renderer ${rendererId}`);

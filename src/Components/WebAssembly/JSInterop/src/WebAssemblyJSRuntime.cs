@@ -36,9 +36,14 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     }
 
     /// <inheritdoc />
-    protected override void BeginInvokeJS(long asyncHandle, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override void BeginInvokeJS(JSAsyncInvocationInfo invocationInfo)
     {
-        InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", asyncHandle);
+        InternalCalls.InvokeJSJson(
+            invocationInfo.Identifier,
+            invocationInfo.TargetInstanceId,
+            (int)invocationInfo.ResultType,
+            invocationInfo.ArgsJson ?? "[]",
+            invocationInfo.TaskId);
     }
 
     /// <inheritdoc />

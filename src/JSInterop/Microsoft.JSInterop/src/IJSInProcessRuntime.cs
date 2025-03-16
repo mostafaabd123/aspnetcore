@@ -21,9 +21,12 @@ public interface IJSInProcessRuntime : IJSRuntime
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     TResult Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TResult>(string identifier, params object?[]? args);
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     IJSObjectReference InvokeNew(string identifier, object?[]? args);
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     TValue GetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier);
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     void SetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value);
 }

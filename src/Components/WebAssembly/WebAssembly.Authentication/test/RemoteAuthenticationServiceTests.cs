@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
@@ -515,7 +516,7 @@ public class RemoteAuthenticationServiceTests
         return mock.Object;
     }
 
-    private class TestJsRuntime : TestJSRuntimeBase
+    private class TestJsRuntime : IJSRuntime
     {
         public IList<(string identifier, object[] args)> PastInvocations { get; set; } = new List<(string, object[])>();
 
@@ -531,16 +532,46 @@ public class RemoteAuthenticationServiceTests
 
         public RemoteUserAccount GetUserResult { get; set; }
 
-        public override ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
         {
             PastInvocations.Add((identifier, args));
             return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
         }
 
-        public override ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
         {
             PastInvocations.Add((identifier, args));
             return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
+        }
+
+        public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask SetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, TValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask SetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
 
         private object GetInvocationResult(string identifier)

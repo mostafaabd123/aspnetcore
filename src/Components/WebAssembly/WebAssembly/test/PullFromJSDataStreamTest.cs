@@ -109,7 +109,7 @@ public class PullFromJSDataStreamTest
         return pullFromJSDataStream;
     }
 
-    class TestJSRuntime : TestJSRuntimeBase
+    class TestJSRuntime : IJSRuntime
     {
         protected readonly byte[] _data;
 
@@ -118,7 +118,7 @@ public class PullFromJSDataStreamTest
             _data = data;
         }
 
-        public override ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+        public virtual ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken, object[] args)
         {
             Assert.Equal("Blazor._internal.getJSDataStreamChunk", identifier);
             if (typeof(TValue) != typeof(byte[]))
@@ -130,9 +130,39 @@ public class PullFromJSDataStreamTest
             return ValueTask.FromResult((TValue)(object)_data.Skip((int)offset).Take(bytesToRead).ToArray());
         }
 
-        public override async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, object[] args)
+        public virtual async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, object[] args)
         {
             return await InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+        }
+
+        public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }        
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask SetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, TValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask SetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 

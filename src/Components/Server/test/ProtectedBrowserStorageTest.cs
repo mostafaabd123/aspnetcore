@@ -1,13 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
+
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -350,21 +353,51 @@ public class ProtectedBrowserStorageTest
         }
     }
 
-    class TestJSRuntime : TestJSRuntimeBase
+    class TestJSRuntime : IJSRuntime
     {
         public List<(string Identifier, object[] Args)> Invocations { get; }
             = new List<(string Identifier, object[] Args)>();
 
         public object NextInvocationResult { get; set; }
 
-        public override ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
         {
             Invocations.Add((identifier, args));
             return (ValueTask<TValue>)NextInvocationResult;
         }
 
-        public override ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
             => InvokeAsync<TValue>(identifier, cancellationToken: CancellationToken.None, args: args);
+
+        public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask SetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, TValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask SetValueAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     class TestProtectedBrowserStorage : ProtectedBrowserStorage

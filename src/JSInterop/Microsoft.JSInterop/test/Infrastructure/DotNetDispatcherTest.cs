@@ -1079,11 +1079,11 @@ public class DotNetDispatcherTest
         public string LastCompletionCallId { get; private set; }
         public DotNetInvocationResult LastCompletionResult { get; private set; }
 
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(JSAsyncInvocationInfo invocationInfo)
         {
-            LastInvocationAsyncHandle = asyncHandle;
-            LastInvocationIdentifier = identifier;
-            LastInvocationArgsJson = argsJson;
+            LastInvocationAsyncHandle = invocationInfo.TaskId;
+            LastInvocationIdentifier = invocationInfo.Identifier;
+            LastInvocationArgsJson = invocationInfo.ArgsJson;
             _nextInvocationTcs.SetResult();
             _nextInvocationTcs = new TaskCompletionSource();
         }

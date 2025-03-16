@@ -274,14 +274,14 @@ export module DotNet {
         JSVoidResult = 3,
     }
 
-    enum JSCallType {
+    export enum JSCallType {
         FunctionCall = 1,
         NewCall = 2,
         GetValue = 3,
         SetValue = 4
     }
 
-    interface JSInvocationInfo {
+    export interface JSInvocationInfo {
         targetInstanceId: number,
         identifier: string,
         argsJson: string,
@@ -289,8 +289,8 @@ export module DotNet {
         resultType: JSCallResultType,
     }
 
-    interface JSAsyncInvocationInfo extends JSInvocationInfo {
-        asyncHandle: number,
+    export interface JSAsyncInvocationInfo extends JSInvocationInfo {
+        taskId: number,
     }
 
     /**
@@ -360,7 +360,7 @@ export module DotNet {
          * @param resultType The type of result expected from the JS interop call.
          * @param targetInstanceId The ID of the target JS object instance.
          */
-        beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number): void;
+        beginInvokeJSFromDotNet(invocationInfo: JSAsyncInvocationInfo): void;
 
         /**
          * Receives notification that an async call from JS to .NET has completed.
@@ -491,7 +491,8 @@ export module DotNet {
             return returnValue;
         }
 
-        invokeJSFromDotNetX(invocationInfo: JSInvocationInfo): string | null {
+        invokeJSFromDotNetNew(invocationInfo: JSInvocationInfo): string | null {
+            console.log(invocationInfo);
             const { targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
 
             const returnValue = this.handleJSCall(identifier, argsJson, targetInstanceId, callType);
@@ -513,8 +514,9 @@ export module DotNet {
                 : stringifyArgs(this, result);
         }
 
-        beginInvokeJSFromDotNetX(invocationInfo: JSAsyncInvocationInfo): void {
-            const { asyncHandle, targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
+        beginInvokeJSFromDotNet(invocationInfo: JSAsyncInvocationInfo): void {
+            console.log(invocationInfo);
+            const { taskId, targetInstanceId, identifier, callType, resultType, argsJson } = invocationInfo;
 
             // Coerce synchronous functions into async ones, plus treat
             // synchronous exceptions the same as async ones
@@ -524,19 +526,19 @@ export module DotNet {
             });
 
             // We only listen for a result if the caller wants to be notified about it
-            if (asyncHandle) {
+            if (taskId) {
                 // On completion, dispatch result back to .NET
                 // Not using "await" because it codegens a lot of boilerplate
                 promise.
                     then(result => stringifyArgs(this, [
-                        asyncHandle,
+                        taskId,
                         true,
                         createJSCallResult(result, resultType)
                     ])).
                     then(
-                        result => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, result),
-                        error => this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([
-                            asyncHandle,
+                        result => this._dotNetCallDispatcher.endInvokeJSFromDotNet(taskId, true, result),
+                        error => this._dotNetCallDispatcher.endInvokeJSFromDotNet(taskId, false, JSON.stringify([
+                            taskId,
                             false,
                             formatError(error)
                         ]))
@@ -544,7 +546,7 @@ export module DotNet {
             }
         }
 
-        beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number): void {
+        beginInvokeJSFromDotNetOld(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number): void {
             // Coerce synchronous functions into async ones, plus treat
             // synchronous exceptions the same as async ones
             const promise = new Promise<any>(resolve => {
@@ -697,6 +699,7 @@ export module DotNet {
     }
 
     export function findObjectMember(identifier: string, targetInstanceId: number): ObjectMemberDescriptor {
+        console.log("findObjectMember", identifier, targetInstanceId)
         const targetInstance = cachedJSObjectsById[targetInstanceId];
 
         if (!targetInstance) {
