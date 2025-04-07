@@ -63,4 +63,16 @@ public static class JSObjectReferenceJsonWorker
         writer.WriteNumber(JSObjectIdKey, objectReference.Id);
         writer.WriteEndObject();
     }
+
+    /// <summary>
+    /// Writes a <see cref="JSFunctionReference"/> to the <paramref name="functionReference"/>.
+    /// </summary>
+    /// <param name="writer">The <see cref="Utf8JsonWriter"/>.</param>
+    /// <param name="functionReference">The <see cref="JSFunctionReference"/> to write.</param>
+    public static void WriteJSFunctionReference(Utf8JsonWriter writer, JSFunctionReference functionReference)
+    {
+        writer.WriteStartObject();
+        writer.WriteNumber(JSObjectIdKey, functionReference.Id);
+        writer.WriteEndObject();
+    }
 }

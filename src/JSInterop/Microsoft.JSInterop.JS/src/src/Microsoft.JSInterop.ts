@@ -155,7 +155,7 @@ export module DotNet {
    * @throws Error if the given value is not an Object.
    */
   export function createJSObjectReference(jsObject: any): any {
-      if (jsObject && typeof jsObject === "object") {
+      if (jsObject && (typeof jsObject === "object" || jsObject instanceof Function)) {
           cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
 
           const result = {
@@ -562,7 +562,9 @@ export module DotNet {
       const targetInstance = cachedJSObjectsById[targetInstanceId];
 
       if (targetInstance) {
-          return targetInstance.resolveFunction(identifier, callType ?? JSCallType.FunctionCall);
+          return identifier.length > 0
+            ? targetInstance.resolveFunction(identifier, callType ?? JSCallType.FunctionCall)
+            : targetInstance.getWrappedObject();
       }
 
       throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);

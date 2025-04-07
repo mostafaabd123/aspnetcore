@@ -1,6 +1,11 @@
 #nullable enable
 abstract Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string?
 abstract Microsoft.JSInterop.JSRuntime.BeginInvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> void
+Microsoft.JSInterop.IJSFunctionReference
+Microsoft.JSInterop.IJSFunctionReference.InvokeAsync<TValue>(params object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.IJSFunctionReference.InvokeAsync<TValue>(System.Threading.CancellationToken cancellationToken, params object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.IJSFunctionReference.InvokeNewAsync(params object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+Microsoft.JSInterop.IJSFunctionReference.InvokeNewAsync(System.Threading.CancellationToken cancellationToken, params object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
 Microsoft.JSInterop.IJSInProcessObjectReference.GetValue<TValue>(string! identifier) -> TValue
 Microsoft.JSInterop.IJSInProcessObjectReference.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
 Microsoft.JSInterop.IJSInProcessObjectReference.SetValue<TValue>(string! identifier, TValue value) -> void
@@ -19,6 +24,15 @@ Microsoft.JSInterop.IJSRuntime.InvokeNewAsync(string! identifier, object?[]? arg
 Microsoft.JSInterop.IJSRuntime.InvokeNewAsync(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
 Microsoft.JSInterop.IJSRuntime.SetValueAsync<TValue>(string! identifier, TValue value) -> System.Threading.Tasks.ValueTask
 Microsoft.JSInterop.IJSRuntime.SetValueAsync<TValue>(string! identifier, TValue value, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+Microsoft.JSInterop.Implementation.JSFunctionReference
+Microsoft.JSInterop.Implementation.JSFunctionReference.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.JSInterop.Implementation.JSFunctionReference.Id.get -> long
+Microsoft.JSInterop.Implementation.JSFunctionReference.InvokeAsync<TValue>(object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.Implementation.JSFunctionReference.InvokeAsync<TValue>(System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.Implementation.JSFunctionReference.InvokeNewAsync(object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+Microsoft.JSInterop.Implementation.JSFunctionReference.InvokeNewAsync(System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
+Microsoft.JSInterop.Implementation.JSFunctionReference.JSFunctionReference(Microsoft.JSInterop.JSRuntime! jsRuntime, long id) -> void
+Microsoft.JSInterop.Implementation.JSFunctionReference.ThrowIfDisposed() -> void
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.GetValue<TValue>(string! identifier) -> TValue
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.SetValue<TValue>(string! identifier, TValue value) -> void
@@ -56,6 +70,7 @@ Microsoft.JSInterop.JSRuntime.InvokeNewAsync(string! identifier, object?[]? args
 Microsoft.JSInterop.JSRuntime.InvokeNewAsync(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
 Microsoft.JSInterop.JSRuntime.SetValueAsync<TValue>(string! identifier, TValue value) -> System.Threading.Tasks.ValueTask
 Microsoft.JSInterop.JSRuntime.SetValueAsync<TValue>(string! identifier, TValue value, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+static Microsoft.JSInterop.Implementation.JSObjectReferenceJsonWorker.WriteJSFunctionReference(System.Text.Json.Utf8JsonWriter! writer, Microsoft.JSInterop.Implementation.JSFunctionReference! functionReference) -> void
 static Microsoft.JSInterop.JSObjectReferenceExtensions.InvokeNewAsync(this Microsoft.JSInterop.IJSObjectReference! jsObjectReference, string! identifier, params object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
 static Microsoft.JSInterop.JSObjectReferenceExtensions.InvokeNewAsync(this Microsoft.JSInterop.IJSObjectReference! jsObjectReference, string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>
 static Microsoft.JSInterop.JSObjectReferenceExtensions.InvokeNewAsync(this Microsoft.JSInterop.IJSObjectReference! jsObjectReference, string! identifier, System.TimeSpan timeout, object?[]? args) -> System.Threading.Tasks.ValueTask<Microsoft.JSInterop.IJSObjectReference!>

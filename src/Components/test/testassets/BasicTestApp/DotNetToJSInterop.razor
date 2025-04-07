@@ -86,6 +86,7 @@
 <div style="margin-top: 2em">
     <span>@TestObjectDisplay</span> <br />
     <button @onclick="GetObjectModelWithInvoke">Get object model with InvokeAsync</button>
+    <button @onclick="GetObjectModelWithInvokeViaFunctionReference">Get object model with InvokeAsync via IJSFunction reference</button>
     <button @onclick="GetObjectPropertiesWithGetValue">Get individual object properties with GetValue</button>
 </div>
 
@@ -133,6 +134,13 @@
     {
         var model = await JSRuntime.InvokeAsync<TestObjectModel>("getTestObject");
         TestObjectDisplay = $"State loaded from model with Invoke: {model.Num} | {model.Text} | {model.GetOnlyProperty}";
+    }
+
+    private async Task GetObjectModelWithInvokeViaFunctionReference()
+    {
+        var funcRef = await JSRuntime.GetValueAsync<IJSFunctionReference>("getTestObject");
+        var model = await funcRef.InvokeAsync<TestObjectModel>();
+        TestObjectDisplay = $"State loaded from model with Invoke via function reference: {model.Num} | {model.Text} | {model.GetOnlyProperty}";
     }
 
     private async Task GetObjectPropertiesWithGetValue()
