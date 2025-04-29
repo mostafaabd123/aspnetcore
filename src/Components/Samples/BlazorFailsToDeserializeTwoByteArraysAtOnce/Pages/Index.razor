@@ -1,0 +1,37 @@
+﻿@page "/"
+@using System.Diagnostics
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveWebAssembly
+
+<pre><code>@log</code></pre>
+
+
+@code {
+    string log = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        await Task.Delay(100);
+
+        try
+        {
+            await Task.WhenAll(
+                    LoadByteArray(),
+                    LoadByteArray()
+                );
+            log = "Was successful in getting 2 byte arrays at once.";
+        }
+        catch (Exception e)
+        {
+            log = $"{e.GetType().Name}: {e.Message}";
+        }
+        StateHasChanged();
+    }
+
+    private async Task LoadByteArray()
+    {
+        byte[] array = await JSRuntime.InvokeAsync<byte[]>("getBigByteArray");
+    }
+}

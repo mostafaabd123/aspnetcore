@@ -83,6 +83,7 @@
     <Project Path="src/Components/Forms/test/Microsoft.AspNetCore.Components.Forms.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Components/Samples/" Id="2cd82042-6126-83c5-70d7-546222e6fba7">
+    <Project Path="src/Components/Samples/BlazorFailsToDeserializeTwoByteArraysAtOnce/BlazorFailsToDeserializeTwoByteArraysAtOnce.csproj" />
     <Project Path="src/Components/Samples/BlazorServerApp/BlazorServerApp.csproj" />
     <Project Path="src/Components/Samples/BlazorUnitedApp.Client/BlazorUnitedApp.Client.csproj" />
     <Project Path="src/Components/Samples/BlazorUnitedApp/BlazorUnitedApp.csproj" />

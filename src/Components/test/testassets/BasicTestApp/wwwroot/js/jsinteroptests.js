@@ -256,6 +256,7 @@ window.jsInteropTests = {
   TestClass: TestClass,
   nonConstructorFunction: () => { return 42; },
   testObject: testObject,
+  getLargeByteArray: function () { return new Uint8Array(10000); },
 };
 
 function returnUndefined() {

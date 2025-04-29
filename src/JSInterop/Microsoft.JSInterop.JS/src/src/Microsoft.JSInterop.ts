@@ -382,6 +382,8 @@ export module DotNet {
     supplyDotNetStream(streamId: number, stream: ReadableStream): void;
   }
 
+  let returningStuffFromCallWithHandle = -1;
+
   class CallDispatcher implements ICallDispatcher {
       private readonly _byteArraysToBeRevived = new Map<number, Uint8Array>();
 
@@ -415,15 +417,23 @@ export module DotNet {
             // We only await the result if the caller wants to be notified about it
             if (asyncHandle) {
                 const result = await valueOrPromise;
+                if (returningStuffFromCallWithHandle !== -1) {
+                    throw new Error("Overlapping returns to .NET.");
+                  }
+                  returningStuffFromCallWithHandle = asyncHandle;
                 const serializedResult = stringifyArgs(this, [
                     asyncHandle,
                     true,
                     createJSCallResult(result, resultType)
                 ]);
                 // On success, dispatch result back to .NET
-                this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, serializedResult);
+                this.endInvokeJSFromDotNetWrapper(asyncHandle, true, serializedResult);
             }
           } catch(error: any) {
+            if (returningStuffFromCallWithHandle !== -1) {
+                throw new Error("Overlapping returns to .NET.");
+              }
+              returningStuffFromCallWithHandle = asyncHandle;
             if (asyncHandle) {
                 const serializedError = JSON.stringify([
                     asyncHandle,
@@ -431,9 +441,17 @@ export module DotNet {
                     formatError(error)
                 ]);
                 // On failure, dispatch error back to .NET
-                this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, serializedError);
+                this.endInvokeJSFromDotNetWrapper(asyncHandle, false, serializedError);
             }
           }
+      }
+
+      endInvokeJSFromDotNetWrapper(asyncHandle: number, succeeded: boolean, resultOrError: any): void {
+          if (returningStuffFromCallWithHandle !== asyncHandle) {
+              throw new Error(`Async call overlap. Expected async handle ${asyncHandle}, but got ${returningStuffFromCallWithHandle}.`);
+          }
+          this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, succeeded, resultOrError);
+          returningStuffFromCallWithHandle = -1;
       }
 
       processJSCall(targetInstanceId: number, identifier: string, callType: JSCallType, argsJson: string | null) {

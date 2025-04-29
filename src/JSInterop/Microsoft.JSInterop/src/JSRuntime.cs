@@ -235,6 +235,11 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     {
         if (id == 0)
         {
+            if (ByteArraysToBeRevived.Count > 0)
+            {
+                //throw new InvalidOperationException($"Incomplete byte array transfer. Current ByteArraysToBeRevived.Count = '{ByteArraysToBeRevived.Count}'.");
+            }
+
             // Starting a new transfer, clear out previously stored byte arrays
             // in case they haven't been cleared already.
             ByteArraysToBeRevived.Clear();

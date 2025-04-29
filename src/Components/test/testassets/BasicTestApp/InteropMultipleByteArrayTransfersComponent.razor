@@ -1,0 +1,94 @@
+﻿@using Microsoft.JSInterop
+@using System.Threading.Tasks
+@inject IJSRuntime JSRuntime
+
+<h3>Sending multiple byte arrays from JS concurrently</h3>
+
+<button id="btn-load-one" @onclick="StartLoadingOne">Load 1</button>
+<button id="btn-load-two" @onclick="StartLoadingTwo">Load 2</button>
+<button id="btn-load-many" @onclick="StartLoadingMany">Load many</button>
+
+<pre><code>@log</code></pre>
+
+@if (SuccessOne)
+{
+    <p id="success-one">
+        Success
+    </p>
+}
+
+@if (SuccessTwo)
+{
+    <p id="success-two">
+        Success
+    </p>
+}
+
+@if (SuccessMany)
+{
+    <p id="success-many">
+        Success
+    </p>
+}
+
+
+@code {
+    string log = "";
+    bool SuccessOne { get; set; } = false;
+    bool SuccessTwo { get; set; } = false;
+    bool SuccessMany { get; set; } = false;
+
+    private async Task StartLoadingOne()
+    {
+        try
+        {
+            await LoadByteArray(42);
+            log = "Success: Got 1 byte array.";
+            SuccessOne = true;
+        }
+        catch (Exception e)
+        {
+            log = $"{e.GetType().Name}: {e.Message}";
+            SuccessOne = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task StartLoadingTwo()
+    {
+        try
+        {
+            await Task.WhenAll(
+                    LoadByteArray(10),
+                    LoadByteArray(20)
+                );
+            log = "Success: Got 2 byte arrays.";
+            SuccessTwo = true;
+        }
+        catch (Exception e)
+        {
+            log = $"{e.GetType().Name}: {e.Message}";
+            SuccessTwo = false;
+        }
+        StateHasChanged();
+    }
+
+
+    private async Task StartLoadingMany()
+    {
+        var tasks = Enumerable.Range(0, 10000).Select(i => LoadByteArray(i)).ToArray();
+        await Task.WhenAll(tasks);
+        log = "Success: Got many byte arrays.";
+        SuccessMany = true;
+    }
+
+    private async Task LoadByteArray(int n)
+    {
+        byte[] arr = await JSRuntime.InvokeAsync<byte[]>("jsInteropTests.getLargeByteArray", n).AsTask();
+
+        if (arr[0] != n)
+        {
+            throw new InvalidOperationException($"Expected {n} but got {arr[0]}");
+        }
+    }
+}
