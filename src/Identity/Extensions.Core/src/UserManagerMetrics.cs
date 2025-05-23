@@ -151,7 +151,7 @@ internal sealed class UserManagerMetrics : IDisposable
         };
         if (result != null)
         {
-            tags.Add("aspnetcore.identity.token_verified", result == true ? "success" : "failed");
+            tags.Add("aspnetcore.identity.token_verified", result == true ? "success" : "failure");
         }
         AddExceptionTags(ref tags, exception);
 
@@ -200,7 +200,7 @@ internal sealed class UserManagerMetrics : IDisposable
             return;
         }
 
-        tags.Add("aspnetcore.identity.result", result.Succeeded ? "success" : "failed");
+        tags.Add("aspnetcore.identity.result", result.Succeeded ? "success" : "failure");
         if (!result.Succeeded && result.Errors.FirstOrDefault()?.Code is { Length: > 0 } code)
         {
             tags.Add("aspnetcore.identity.result_error_code", code);
@@ -213,7 +213,7 @@ internal sealed class UserManagerMetrics : IDisposable
         {
             (PasswordVerificationResult.Success, false, false) => "success",
             (PasswordVerificationResult.SuccessRehashNeeded, false, false) => "success_rehash_needed",
-            (PasswordVerificationResult.Failed, false, false) => "failed",
+            (PasswordVerificationResult.Failed, false, false) => "failure",
             (null, true, false) => "password_missing",
             (null, false, true) => "user_missing",
             _ => "_UNKNOWN"

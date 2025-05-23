@@ -88,7 +88,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         {
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.authentication_scheme", authenticationScheme },
-            { "aspnetcore.identity.sign_in.result", success.GetValueOrDefault() ? "success" : "failed" }
+            { "aspnetcore.identity.sign_in.result", success.GetValueOrDefault() ? "success" : "failure" }
         };
         if (isPersistent != null)
         {
@@ -141,7 +141,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { IsLockedOut: true } => "locked_out",
             { IsNotAllowed: true } => "not_allowed",
             { RequiresTwoFactor: true } => "requires_two_factor",
-            _ => "failed"
+            _ => "failure"
         };
     }
 }
