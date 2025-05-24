@@ -1140,11 +1140,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual Task<IdentityResult> AddClaimAsync(TUser user, Claim claim)
     {
-        ThrowIfDisposed();
-        GetClaimStore();
-        ArgumentNullThrowHelper.ThrowIfNull(claim);
-        ArgumentNullThrowHelper.ThrowIfNull(user);
-        return AddClaimsAsync(user, new Claim[] { claim });
+        return AddClaimsAsync(user, [claim]);
     }
 
     /// <summary>
@@ -1162,8 +1158,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
-            ArgumentNullThrowHelper.ThrowIfNull(claims);
             ArgumentNullThrowHelper.ThrowIfNull(user);
+            ArgumentNullThrowHelper.ThrowIfNull(claims);
 
             await claimStore.AddClaimsAsync(user, claims, CancellationToken).ConfigureAwait(false);
             return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.AddClaims).ConfigureAwait(false);
@@ -1191,9 +1187,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
         {
             ThrowIfDisposed();
             var claimStore = GetClaimStore();
+            ArgumentNullThrowHelper.ThrowIfNull(user);
             ArgumentNullThrowHelper.ThrowIfNull(claim);
             ArgumentNullThrowHelper.ThrowIfNull(newClaim);
-            ArgumentNullThrowHelper.ThrowIfNull(user);
 
             await claimStore.ReplaceClaimAsync(user, claim, newClaim, CancellationToken).ConfigureAwait(false);
             return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.ReplaceClaim).ConfigureAwait(false);
@@ -1216,11 +1212,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual Task<IdentityResult> RemoveClaimAsync(TUser user, Claim claim)
     {
-        ThrowIfDisposed();
-        GetClaimStore();
-        ArgumentNullThrowHelper.ThrowIfNull(user);
-        ArgumentNullThrowHelper.ThrowIfNull(claim);
-        return RemoveClaimsAsync(user, new Claim[] { claim });
+        return RemoveClaimsAsync(user, [claim]);
     }
 
     /// <summary>

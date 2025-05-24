@@ -869,6 +869,39 @@ public class SignInManagerTest
             ]));
     }
 
+    [Fact]
+    public async Task ForgetTwoFactorClient()
+    {
+        // Setup
+        var testMeterFactory = new TestMeterFactory();
+        using var forgetTwoFactorClient = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", "aspnetcore.identity.forget_two_factor_client");
+
+        var user = new PocoUser { UserName = "Foo" };
+        var manager = SetupUserManager(user, meterFactory: testMeterFactory);
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        var helper = SetupSignInManager(manager.Object, context);
+        auth.Setup(a => a.SignOutAsync(
+            context,
+            IdentityConstants.TwoFactorRememberMeScheme,
+            It.IsAny<AuthenticationProperties>())).Returns(Task.FromException(new InvalidOperationException())).Verifiable();
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(() => helper.ForgetTwoFactorClientAsync());
+
+        // Assert
+        manager.Verify();
+        auth.Verify();
+
+        Assert.Collection(forgetTwoFactorClient.GetMeasurementSnapshot(),
+            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            [
+                KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.TwoFactorRememberMe"),
+                KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException"),
+            ]));
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

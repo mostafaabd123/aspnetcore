@@ -124,13 +124,16 @@ public class UserManagerTest
     }
 
     [Fact]
-    public async Task DeleteCallsStore()
+    public async Task DeleteCallsStore_Success()
     {
         // Setup
+        var testMeterFactory = new TestMeterFactory();
+        using var deleteUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", "aspnetcore.identity.delete_user");
+
         var store = new Mock<IUserStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
         store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
-        var userManager = MockHelpers.TestUserManager(store.Object);
+        var userManager = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory);
 
         // Act
         var result = await userManager.DeleteAsync(user);
@@ -138,6 +141,41 @@ public class UserManagerTest
         // Assert
         Assert.True(result.Succeeded);
         store.VerifyAll();
+
+        Assert.Collection(deleteUser.GetMeasurementSnapshot(),
+            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            [
+                KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
+            ]));
+    }
+
+    [Fact]
+    public async Task DeleteCallsStore_Failure()
+    {
+        // Setup
+        var testMeterFactory = new TestMeterFactory();
+        using var deleteUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", "aspnetcore.identity.delete_user");
+
+        var store = new Mock<IUserStore<PocoUser>>();
+        var user = new PocoUser { UserName = "Foo" };
+        store.Setup(s => s.DeleteAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Failed(new IdentityErrorDescriber().ConcurrencyFailure())).Verifiable();
+        var userManager = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory);
+
+        // Act
+        var result = await userManager.DeleteAsync(user);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        store.VerifyAll();
+
+        Assert.Collection(deleteUser.GetMeasurementSnapshot(),
+            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            [
+                KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.result", "failure"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.result_error_code", "ConcurrencyFailure")
+            ]));
     }
 
     [Fact]
@@ -591,6 +629,7 @@ public class UserManagerTest
         var testMeterFactory = new TestMeterFactory();
         using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", "aspnetcore.identity.update_user");
         using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", "aspnetcore.identity.check_password");
+        using var verifyPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", "aspnetcore.identity.verify_password");
 
         var store = new Mock<IUserPasswordStore<PocoUser>>();
         var hasher = new Mock<IPasswordHasher<PocoUser>>();
@@ -624,6 +663,11 @@ public class UserManagerTest
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
             ]));
         Assert.Collection(checkPassword.GetMeasurementSnapshot(),
+            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            [
+                KeyValuePair.Create<string, object>("aspnetcore.identity.user.password_result", "success_rehash_needed")
+            ]));
+        Assert.Collection(verifyPassword.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.password_result", "success_rehash_needed")
@@ -1245,9 +1289,9 @@ public class UserManagerTest
                 async () => await manager.CreateAsync(new PocoUser(), null));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.UpdateAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.DeleteAsync(null));
-        await Assert.ThrowsAsync<ArgumentNullException>("claim", async () => await manager.AddClaimAsync(null, null));
-        await Assert.ThrowsAsync<ArgumentNullException>("claim", async () => await manager.ReplaceClaimAsync(null, null, null));
-        await Assert.ThrowsAsync<ArgumentNullException>("claims", async () => await manager.AddClaimsAsync(null, null));
+        await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.AddClaimAsync(null, null));
+        await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.ReplaceClaimAsync(null, null, null));
+        await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await manager.AddClaimsAsync(null, null));
         await Assert.ThrowsAsync<ArgumentNullException>("userName", async () => await manager.FindByNameAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("login", async () => await manager.AddLoginAsync(null, null));
         await Assert.ThrowsAsync<ArgumentNullException>("loginProvider",
