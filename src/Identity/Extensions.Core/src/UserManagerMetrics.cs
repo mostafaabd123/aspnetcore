@@ -14,10 +14,18 @@ internal sealed class UserManagerMetrics : IDisposable
 {
     public const string MeterName = "Microsoft.AspNetCore.Identity";
 
+    public const string CreateCounterName = "aspnetcore.identity.user.create";
+    public const string UpdateCounterName = "aspnetcore.identity.user.update";
+    public const string DeleteCounterName = "aspnetcore.identity.user.delete";
+    public const string CheckPasswordCounterName = "aspnetcore.identity.user.check_password";
+    public const string VerifyPasswordCounterName = "aspnetcore.identity.user.verify_password";
+    public const string VerifyTokenCounterName = "aspnetcore.identity.user.verify_token";
+    public const string GenerateTokenCounterName = "aspnetcore.identity.user.generate_token";
+
     private readonly Meter _meter;
-    private readonly Counter<long> _createUserCounter;
-    private readonly Counter<long> _updateUserCounter;
-    private readonly Counter<long> _deleteUserCounter;
+    private readonly Counter<long> _createCounter;
+    private readonly Counter<long> _updateCounter;
+    private readonly Counter<long> _deleteCounter;
     private readonly Counter<long> _checkPasswordCounter;
     private readonly Counter<long> _verifyPasswordCounter;
     private readonly Counter<long> _verifyTokenCounter;
@@ -26,39 +34,39 @@ internal sealed class UserManagerMetrics : IDisposable
     public UserManagerMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
-        _createUserCounter = _meter.CreateCounter<long>(
-            "aspnetcore.identity.create_user",
+        _createCounter = _meter.CreateCounter<long>(
+            CreateCounterName,
             "count",
             "The number of user creation attempts.");
-        _updateUserCounter = _meter.CreateCounter<long>(
-            "aspnetcore.identity.update_user",
+        _updateCounter = _meter.CreateCounter<long>(
+            UpdateCounterName,
             "count",
             "The number of user update attempts.");
-        _deleteUserCounter = _meter.CreateCounter<long>(
-            "aspnetcore.identity.delete_user",
+        _deleteCounter = _meter.CreateCounter<long>(
+            DeleteCounterName,
             "count",
             "The number of user deletion attempts.");
         _checkPasswordCounter = _meter.CreateCounter<long>(
-            "aspnetcore.identity.check_password",
+            CheckPasswordCounterName,
             "count",
             "The number of password check attempts.");
         _verifyPasswordCounter = _meter.CreateCounter<long>(
-            "aspnetcore.identity.verify_password",
+            VerifyPasswordCounterName,
             "count",
             "The number of password verification attempts.");
         _verifyTokenCounter = _meter.CreateCounter<long>(
-            "aspnetcore.identity.verify_token",
+            VerifyTokenCounterName,
             "count",
             "The number of token verification attempts.");
         _generateTokenCounter = _meter.CreateCounter<long>(
-            "aspnetcore.identity.generate_token",
+            GenerateTokenCounterName,
             "count",
             "The number of token generation attempts.");
     }
 
     internal void CreateUser(string userType, IdentityResult? result, Exception? exception = null)
     {
-        if (_createUserCounter.Enabled)
+        if (_createCounter.Enabled)
         {
             var tags = new TagList
             {
@@ -67,7 +75,7 @@ internal sealed class UserManagerMetrics : IDisposable
             AddIdentityResultTags(ref tags, result);
             AddExceptionTags(ref tags, exception);
 
-            _createUserCounter.Add(1, tags);
+            _createCounter.Add(1, tags);
         }
     }
 
@@ -81,7 +89,7 @@ internal sealed class UserManagerMetrics : IDisposable
 
     internal void UpdateUser(string userType, IdentityResult? result, UserUpdateType updateType, Exception? exception = null)
     {
-        if (_updateUserCounter.Enabled)
+        if (_updateCounter.Enabled)
         {
             var tags = new TagList
             {
@@ -91,13 +99,13 @@ internal sealed class UserManagerMetrics : IDisposable
             AddIdentityResultTags(ref tags, result);
             AddExceptionTags(ref tags, exception);
 
-            _updateUserCounter.Add(1, tags);
+            _updateCounter.Add(1, tags);
         }
     }
 
     internal void DeleteUser(string userType, IdentityResult? result, Exception? exception = null)
     {
-        if (_deleteUserCounter.Enabled)
+        if (_deleteCounter.Enabled)
         {
             var tags = new TagList
             {
@@ -106,7 +114,7 @@ internal sealed class UserManagerMetrics : IDisposable
             AddIdentityResultTags(ref tags, result);
             AddExceptionTags(ref tags, exception);
 
-            _deleteUserCounter.Add(1, tags);
+            _deleteCounter.Add(1, tags);
         }
     }
 

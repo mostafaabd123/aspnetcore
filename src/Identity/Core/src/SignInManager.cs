@@ -263,17 +263,27 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task SignInWithClaimsAsync(TUser user, AuthenticationProperties? authenticationProperties, IEnumerable<Claim> additionalClaims)
     {
-        var userPrincipal = await CreateUserPrincipalAsync(user);
-        foreach (var claim in additionalClaims)
+        try
         {
-            userPrincipal.Identities.First().AddClaim(claim);
-        }
-        await Context.SignInAsync(AuthenticationScheme,
-            userPrincipal,
-            authenticationProperties ?? new AuthenticationProperties());
+            var userPrincipal = await CreateUserPrincipalAsync(user);
+            foreach (var claim in additionalClaims)
+            {
+                userPrincipal.Identities.First().AddClaim(claim);
+            }
+            await Context.SignInAsync(AuthenticationScheme,
+                userPrincipal,
+                authenticationProperties ?? new AuthenticationProperties());
 
-        // This is useful for updating claims immediately when hitting MapIdentityApi's /account/info endpoint with cookies.
-        Context.User = userPrincipal;
+            // This is useful for updating claims immediately when hitting MapIdentityApi's /account/info endpoint with cookies.
+            Context.User = userPrincipal;
+
+            _metrics?.SignInUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme);
+        }
+        catch (Exception ex)
+        {
+            _metrics?.SignInUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme, ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -281,15 +291,25 @@ public class SignInManager<TUser> where TUser : class
     /// </summary>
     public virtual async Task SignOutAsync()
     {
-        await Context.SignOutAsync(AuthenticationScheme);
+        try
+        {
+            await Context.SignOutAsync(AuthenticationScheme);
 
-        if (await _schemes.GetSchemeAsync(IdentityConstants.ExternalScheme) != null)
-        {
-            await Context.SignOutAsync(IdentityConstants.ExternalScheme);
+            if (await _schemes.GetSchemeAsync(IdentityConstants.ExternalScheme) != null)
+            {
+                await Context.SignOutAsync(IdentityConstants.ExternalScheme);
+            }
+            if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
+            {
+                await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+            }
+
+            _metrics?.SignOutUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme);
         }
-        if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
+        catch (Exception ex)
         {
-            await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+            _metrics?.SignOutUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme, ex);
+            throw;
         }
     }
 
@@ -371,13 +391,13 @@ public class SignInManager<TUser> where TUser : class
             var result = attempt.Succeeded
                 ? await SignInOrTwoFactorAsync(user, isPersistent)
                 : attempt;
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Password, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Password, isPersistent);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Password, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Password, isPersistent, ex);
             throw;
         }
     }
@@ -398,7 +418,7 @@ public class SignInManager<TUser> where TUser : class
         var user = await UserManager.FindByNameAsync(userName);
         if (user == null)
         {
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, SignInResult.Failed, SignInType.Password, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, SignInResult.Failed, SignInType.Password, isPersistent);
             return SignInResult.Failed;
         }
 
@@ -550,13 +570,13 @@ public class SignInManager<TUser> where TUser : class
         try
         {
             var result = await TwoFactorRecoveryCodeSignInCoreAsync(recoveryCode);
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorRecoveryCode, isPersistent: false);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorRecoveryCode, isPersistent: false);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorRecoveryCode, isPersistent: false, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorRecoveryCode, isPersistent: false, ex);
             throw;
         }
     }
@@ -631,13 +651,13 @@ public class SignInManager<TUser> where TUser : class
         try
         {
             var result = await TwoFactorAuthenticatorSignInCoreAsync(code, isPersistent, rememberClient);
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorAuthenticator, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorAuthenticator, isPersistent);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorAuthenticator, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorAuthenticator, isPersistent, ex);
             throw;
         }
     }
@@ -695,13 +715,13 @@ public class SignInManager<TUser> where TUser : class
         try
         {
             var result = await TwoFactorSignInCoreAsync(provider, code, isPersistent, rememberClient);
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactor, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactor, isPersistent);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactor, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactor, isPersistent, ex);
             throw;
         }
     }
@@ -784,13 +804,13 @@ public class SignInManager<TUser> where TUser : class
         try
         {
             var result = await ExternalLoginSignInCoreAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor);
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.External, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.External, isPersistent);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.SignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.External, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.External, isPersistent, ex);
             throw;
         }
     }

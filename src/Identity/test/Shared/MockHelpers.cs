@@ -55,6 +55,7 @@ public static class MockHelpers
         if (meterFactory != null)
         {
             services.AddSingleton<UserManagerMetrics>();
+            services.AddSingleton<SignInManagerMetrics>();
             services.AddSingleton(meterFactory);
         }
         var userManager = new UserManager<TUser>(store, options.Object, new PasswordHasher<TUser>(),
