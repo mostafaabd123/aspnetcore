@@ -34,34 +34,13 @@ internal sealed class UserManagerMetrics : IDisposable
     public UserManagerMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
-        _createCounter = _meter.CreateCounter<long>(
-            CreateCounterName,
-            "count",
-            "The number of user creation attempts.");
-        _updateCounter = _meter.CreateCounter<long>(
-            UpdateCounterName,
-            "count",
-            "The number of user update attempts.");
-        _deleteCounter = _meter.CreateCounter<long>(
-            DeleteCounterName,
-            "count",
-            "The number of user deletion attempts.");
-        _checkPasswordCounter = _meter.CreateCounter<long>(
-            CheckPasswordCounterName,
-            "count",
-            "The number of password check attempts.");
-        _verifyPasswordCounter = _meter.CreateCounter<long>(
-            VerifyPasswordCounterName,
-            "count",
-            "The number of password verification attempts.");
-        _verifyTokenCounter = _meter.CreateCounter<long>(
-            VerifyTokenCounterName,
-            "count",
-            "The number of token verification attempts.");
-        _generateTokenCounter = _meter.CreateCounter<long>(
-            GenerateTokenCounterName,
-            "count",
-            "The number of token generation attempts.");
+        _createCounter = _meter.CreateCounter<long>(CreateCounterName, "count", "The number of users created.");
+        _updateCounter = _meter.CreateCounter<long>(UpdateCounterName, "count", "The number of user updates.");
+        _deleteCounter = _meter.CreateCounter<long>(DeleteCounterName, "count", "The number of users deleted.");
+        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "count", "The number of check password attempts.");
+        _verifyPasswordCounter = _meter.CreateCounter<long>(VerifyPasswordCounterName, "count", "The number of password verification attempts.");
+        _verifyTokenCounter = _meter.CreateCounter<long>(VerifyTokenCounterName, "count", "The number of token verification attempts.");
+        _generateTokenCounter = _meter.CreateCounter<long>(GenerateTokenCounterName, "count", "The number of token generation attempts.");
     }
 
     internal void CreateUser(string userType, IdentityResult? result, Exception? exception = null)

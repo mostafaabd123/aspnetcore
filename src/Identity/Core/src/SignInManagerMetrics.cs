@@ -31,13 +31,13 @@ internal sealed class SignInManagerMetrics : IDisposable
     {
         _meter = meterFactory.Create(MeterName);
 
-        _authenticateCounter = _meter.CreateCounter<long>(AuthenticateCounterName, "count", "The number of authenticate and sign-in attempts.");
+        _authenticateCounter = _meter.CreateCounter<long>(AuthenticateCounterName, "count", "The number of authenticate and sign in attempts.");
         _rememberTwoFactorClientCounter = _meter.CreateCounter<long>(RememberTwoFactorCounterName, "count", "The number of two factor clients remembered.");
         _forgetTwoFactorCounter = _meter.CreateCounter<long>(ForgetTwoFactorCounterName, "count", "The number of two factor clients forgotten.");
         _refreshCounter = _meter.CreateCounter<long>(RefreshCounterName, "count", "The number of refresh sign-in attempts.");
         _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "count", "The number of check password attempts.");
-        _signInUserPrincipalCounter = _meter.CreateCounter<long>(SignInUserPrincipalCounterName, "count", "The number of check password attempts.");
-        _signOutUserPrincipalCounter = _meter.CreateCounter<long>(SignOutUserPrincipalCounterName, "count", "The number of check password attempts.");
+        _signInUserPrincipalCounter = _meter.CreateCounter<long>(SignInUserPrincipalCounterName, "count", "The number of user principals signed in.");
+        _signOutUserPrincipalCounter = _meter.CreateCounter<long>(SignOutUserPrincipalCounterName, "count", "The number of user principals signed out.");
     }
 
     internal void CheckPasswordSignIn(string userType, SignInResult? result, Exception? exception = null)
