@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
@@ -43,8 +44,9 @@ internal sealed partial class ComponentHub : Hub
     private readonly CircuitIdFactory _circuitIdFactory;
     private readonly CircuitRegistry _circuitRegistry;
     private readonly ICircuitHandleRegistry _circuitHandleRegistry;
+    private readonly CircuitActivitySource _circuitActivitySource;
     private readonly ILogger _logger;
-    private readonly ActivityContext _httpContext;
+    private Activity _circuitActivity;
 
     public ComponentHub(
         IServerComponentDeserializer serializer,
@@ -53,6 +55,7 @@ internal sealed partial class ComponentHub : Hub
         CircuitIdFactory circuitIdFactory,
         CircuitRegistry circuitRegistry,
         ICircuitHandleRegistry circuitHandleRegistry,
+        CircuitActivitySource circuitActivitySource,
         ILogger<ComponentHub> logger)
     {
         _serverComponentSerializer = serializer;
@@ -61,8 +64,8 @@ internal sealed partial class ComponentHub : Hub
         _circuitIdFactory = circuitIdFactory;
         _circuitRegistry = circuitRegistry;
         _circuitHandleRegistry = circuitHandleRegistry;
+        _circuitActivitySource = circuitActivitySource;
         _logger = logger;
-        _httpContext = ComponentsActivitySource.CaptureHttpContext();
     }
 
     /// <summary>
@@ -96,6 +99,12 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
+        var circuitId = _circuitIdFactory.CreateCircuitId();
+        // TODO: Grab the context from the feature Context.GetHttpContext().Features.Get
+        var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
+
+        _circuitActivity = _circuitActivitySource.StartCircuitActivity(circuitId.Id, httpActivityContext);
+
         if (baseUri == null ||
             uri == null ||
             !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
@@ -128,6 +137,7 @@ internal sealed partial class ComponentHub : Hub
                 new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
             var resourceCollection = Context.GetHttpContext().GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
             circuitHost = await _circuitFactory.CreateCircuitHostAsync(
+                circuitId,
                 components,
                 circuitClient,
                 baseUri,
@@ -140,7 +150,7 @@ internal sealed partial class ComponentHub : Hub
             // SignalR message loop (we'd get a deadlock if any of the initialization
             // logic relied on receiving a subsequent message from SignalR), and it will
             // take care of its own errors anyway.
-            _ = circuitHost.InitializeAsync(store, _httpContext, Context.ConnectionAborted);
+            _ = circuitHost.InitializeAsync(store, Context.ConnectionAborted);
 
             // It's safe to *publish* the circuit now because nothing will be able
             // to run inside it until after InitializeAsync completes.

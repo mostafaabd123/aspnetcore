@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 internal interface ICircuitFactory
 {
     ValueTask<CircuitHost> CreateCircuitHostAsync(
+        CircuitId circuitId,
         IReadOnlyList<ComponentDescriptor> components,
         CircuitClientProxy client,
         string baseUri,

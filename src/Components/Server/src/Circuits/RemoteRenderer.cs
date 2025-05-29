@@ -60,11 +60,11 @@ internal partial class RemoteRenderer : WebRenderer
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-    protected internal override ResourceAssetCollection Assets => _resourceCollection ?? base.Assets;
+    protected override ResourceAssetCollection Assets => _resourceCollection ?? base.Assets;
 
-    protected internal override RendererInfo RendererInfo => _componentPlatform;
+    protected override RendererInfo RendererInfo => _componentPlatform;
 
-    protected internal override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveServer;
+    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveServer;
 
     public Task AddComponentAsync(Type componentType, ParameterView parameters, string domElementSelector)
     {

@@ -15,74 +15,25 @@ internal class ComponentsActivitySource
     internal const string OnRouteName = $"{Name}.RouteChange";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
-    private ActivityContext _httpContext;
-    private ActivityContext _circuitContext;
-    private string? _circuitId;
     private ActivityContext _routeContext;
 
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
-    public static ActivityContext CaptureHttpContext()
-    {
-        var parentActivity = Activity.Current;
-        if (parentActivity is not null && parentActivity.OperationName == "Microsoft.AspNetCore.Hosting.HttpRequestIn" && parentActivity.Recorded)
-        {
-            return parentActivity.Context;
-        }
-        return default;
-    }
-
-    public Activity? StartCircuitActivity(string circuitId, ActivityContext httpContext)
-    {
-        _circuitId = circuitId;
-
-        var activity = ActivitySource.CreateActivity(OnCircuitName, ActivityKind.Internal, parentId: null, null, null);
-        if (activity is not null)
-        {
-            if (activity.IsAllDataRequested)
-            {
-                if (_circuitId != null)
-                {
-                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
-                }
-                if (httpContext != default)
-                {
-                    activity.AddLink(new ActivityLink(httpContext));
-                }
-            }
-            activity.DisplayName = $"Circuit {circuitId ?? ""}";
-            activity.Start();
-            _circuitContext = activity.Context;
-        }
-        return activity;
-    }
-
-    public void FailCircuitActivity(Activity? activity, Exception ex)
-    {
-        _circuitContext = default;
-        if (activity != null && !activity.IsStopped)
-        {
-            activity.SetTag("error.type", ex.GetType().FullName);
-            activity.SetStatus(ActivityStatusCode.Error);
-            activity.Stop();
-        }
-    }
+    public Activity LinkedActivity { get; set; }
 
     public Activity? StartRouteActivity(string componentType, string route)
     {
-        if (_httpContext == default)
-        {
-            _httpContext = CaptureHttpContext();
-        }
-
         var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
         {
             if (activity.IsAllDataRequested)
             {
-                if (_circuitId != null)
+                if (LinkedActivity != null)
                 {
-                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
+                    foreach (var tag in LinkedActivity.Tags)
+                    {
+                        activity.SetTag(tag.Key, tag.Value);
+                    }
                 }
                 if (componentType != null)
                 {
@@ -92,13 +43,9 @@ internal class ComponentsActivitySource
                 {
                     activity.SetTag("aspnetcore.components.route", route);
                 }
-                if (_httpContext != default)
+                if (LinkedActivity?.Context != default)
                 {
-                    activity.AddLink(new ActivityLink(_httpContext));
-                }
-                if (_circuitContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_circuitContext));
+                    activity.AddLink(new ActivityLink(LinkedActivity.Context));
                 }
             }
 
@@ -116,10 +63,6 @@ internal class ComponentsActivitySource
         {
             if (activity.IsAllDataRequested)
             {
-                if (_circuitId != null)
-                {
-                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
-                }
                 if (componentType != null)
                 {
                     activity.SetTag("aspnetcore.components.type", componentType);
@@ -132,13 +75,9 @@ internal class ComponentsActivitySource
                 {
                     activity.SetTag("aspnetcore.components.attribute.name", attributeName);
                 }
-                if (_httpContext != default)
+                if (LinkedActivity.Context != default)
                 {
-                    activity.AddLink(new ActivityLink(_httpContext));
-                }
-                if (_circuitContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_circuitContext));
+                    activity.AddLink(new ActivityLink(LinkedActivity.Context));
                 }
                 if (_routeContext != default)
                 {

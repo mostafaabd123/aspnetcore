@@ -25,7 +25,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
     private readonly CircuitMetrics? _circuitMetrics;
-    private readonly ComponentsActivitySource? _componentsActivitySource;
+    private readonly CircuitActivitySource _componentsActivitySource;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
@@ -52,7 +52,7 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
         CircuitMetrics? circuitMetrics,
-        ComponentsActivitySource? componentsActivitySource,
+        CircuitActivitySource componentsActivitySource,
         ILogger logger)
     {
         CircuitId = circuitId;
@@ -108,7 +108,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpContext, CancellationToken cancellationToken)
+    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, CancellationToken cancellationToken)
     {
         Log.InitializationStarted(_logger);
 
@@ -123,8 +123,6 @@ internal partial class CircuitHost : IAsyncDisposable
             try
             {
                 _initialized = true; // We're ready to accept incoming JSInterop calls from here on
-
-                activity = _componentsActivitySource?.StartCircuitActivity(CircuitId.Id, httpContext);
                 _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
 
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders
@@ -174,7 +172,7 @@ internal partial class CircuitHost : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                _componentsActivitySource?.FailCircuitActivity(activity, ex);
+                _componentsActivitySource.FailCircuitActivity(activity, ex);
 
                 // Report errors asynchronously. InitializeAsync is designed not to throw.
                 Log.InitializationFailed(_logger, ex);

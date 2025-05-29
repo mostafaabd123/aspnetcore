@@ -39,6 +39,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
     }
 
     public async ValueTask<CircuitHost> CreateCircuitHostAsync(
+        CircuitId circuitId,
         IReadOnlyList<ComponentDescriptor> components,
         CircuitClientProxy client,
         string baseUri,
@@ -54,6 +55,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
         var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
         var scrollToLocationHash = (RemoteScrollToLocationHash)scope.ServiceProvider.GetRequiredService<IScrollToLocationHash>();
+        var circuitActivitySource = scope.ServiceProvider.GetRequiredService<CircuitActivitySource>();
+
         if (client.Connected)
         {
             navigationManager.AttachJsRuntime(jsRuntime);
@@ -66,7 +69,6 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         {
             navigationManager.Initialize(baseUri, uri);
         }
-        var componentsActivitySource = scope.ServiceProvider.GetService<ComponentsActivitySource>();
 
         if (components.Count > 0)
         {
@@ -100,7 +102,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             .ToArray();
 
         var circuitHost = new CircuitHost(
-            _circuitIdFactory.CreateCircuitId(),
+            circuitId,
             scope,
             _options,
             client,

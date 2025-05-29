@@ -96,10 +96,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _componentFactory = new ComponentFactory(componentActivator, this);
         _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
         _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
-
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
             : serviceProvider.GetServices<ICascadingValueSupplier>().ToArray();
+
+        _componentsActivitySource.LinkedActivity = Activity.Current;
     }
 
     internal ComponentsMetrics? ComponentMetrics => _componentsMetrics;
