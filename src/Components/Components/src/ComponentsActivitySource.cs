@@ -19,7 +19,7 @@ internal class ComponentsActivitySource
 
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
-    public Activity LinkedActivity { get; set; }
+    public Activity? LinkedActivity { get; set; }
 
     public Activity? StartRouteActivity(string componentType, string route)
     {
@@ -43,7 +43,7 @@ internal class ComponentsActivitySource
                 {
                     activity.SetTag("aspnetcore.components.route", route);
                 }
-                if (LinkedActivity?.Context != default)
+                if (LinkedActivity != null)
                 {
                     activity.AddLink(new ActivityLink(LinkedActivity.Context));
                 }
@@ -75,7 +75,7 @@ internal class ComponentsActivitySource
                 {
                     activity.SetTag("aspnetcore.components.attribute.name", attributeName);
                 }
-                if (LinkedActivity.Context != default)
+                if (LinkedActivity != null)
                 {
                     activity.AddLink(new ActivityLink(LinkedActivity.Context));
                 }

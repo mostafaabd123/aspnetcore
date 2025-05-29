@@ -112,7 +112,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             navigationManager,
             circuitHandlers,
             _circuitMetrics,
-            componentsActivitySource,
+            circuitActivitySource,
             _loggerFactory.CreateLogger<CircuitHost>());
         Log.CreatedCircuit(_logger, circuitHost);
 

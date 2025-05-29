@@ -34,7 +34,7 @@ internal class CircuitActivitySource
         return activity;
     }
 
-    public void FailCircuitActivity(Activity? activity, Exception ex)
+    public static void FailCircuitActivity(Activity? activity, Exception ex)
     {
         if (activity != null && !activity.IsStopped)
         {
