@@ -1,3 +1,10 @@
+![1000984813](https://github.com/user-attachments/assets/2174b38b-2018-40de-bd71-d965efe3177c)
+![1000984812](https://github.com/user-attachments/assets/86783b34-ce1f-462f-a6d2-108233b505cf)
+![1000984816](https://github.com/user-attachments/assets/82f712dd-1fbf-477a-a0c4-cdb8ce55d25b)
+![1000984808](https://github.com/user-attachments/assets/9f1697bd-471e-4526-a81d-1f72eeff30e8)
+![1000984811](https://github.com/user-attachments/assets/0a761b64-0081-451d-ade5-b25ceb6a87ff)
+![1000984810](https://github.com/user-attachments/assets/99d7a5dc-1450-4fe7-b6ed-3780eb7b35ef)
+![1000984809](https://github.com/user-attachments/assets/846e761a-74b8-4d68-a3ac-cba48462d7fb)
 # How to contribute
 
 One of the easiest ways to contribute is to participate in discussions on GitHub issues. You can also contribute by submitting pull requests with code changes.
